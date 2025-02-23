@@ -17,4 +17,4 @@ And if the user answers No, he will log in as a user. A list of options for the 
 - Display my loan books.
 - Quit.
 
-When borrowing and returning, this is done by ID and the title of the book.
+When borrowing and returning, this is done by ID and the title of the book. And display all books for administrator contains more details than user.
