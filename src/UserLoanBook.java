@@ -8,8 +8,9 @@ public class UserLoanBook {
     private int book_id;
     private Date loan_date;
     private Date return_date;
+    private boolean available;
 
-    public UserLoanBook(int id, String title, String author, String user_name, int book_id, Date loan_date, Date return_date) {
+    public UserLoanBook(int id, String title, String author, String user_name, int book_id, Date loan_date, Date return_date, boolean available) {
         this.id = id;
         this.title = title;
         this.author = author;
@@ -17,15 +18,7 @@ public class UserLoanBook {
         this.book_id = book_id;
         this.loan_date = loan_date;
         this.return_date = return_date;
-    }
-
-    public UserLoanBook(int id, String title, String author, String user_name, Date loan_date, Date return_date) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.user_name = user_name;
-        this.loan_date = loan_date;
-        this.return_date = return_date;
+        this.available = available;
     }
 
     public UserLoanBook() {
@@ -88,4 +81,11 @@ public class UserLoanBook {
         this.title = title;
     }
 
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
 }

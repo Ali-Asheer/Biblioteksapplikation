@@ -41,7 +41,6 @@ public class LoanDAO {
         String sql2 = "SELECT * FROM books WHERE id = ?";
         try (Connection conn = Database.getConnection();
              PreparedStatement stmt2 = conn.prepareStatement(sql2)) {
-
             stmt2.setInt(1, id);
             try (ResultSet rs = stmt2.executeQuery()) {
                 if (rs.next()) {
@@ -89,8 +88,7 @@ public class LoanDAO {
     public static List<UserLoanBook> DisplayMyLoanBooks(String userName) {
         List<UserLoanBook> resultList = new ArrayList<>();
 
-        String sql = "SELECT books.id, books.title, books.author ,loans.loan_date, loans.return_date FROM  loans JOIN books ON loans.book_id = books.id WHERE loans.user_name = ? and books.available = false ";
-
+        String sql = "SELECT b.id, b.title, b.author ,l.loan_date, l.return_date FROM  loans l JOIN books b ON l.book_id = b.id WHERE l.user_name = ? and b.available = false ";
 
         try (Connection conn = Database.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

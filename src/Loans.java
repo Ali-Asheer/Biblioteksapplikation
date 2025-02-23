@@ -7,13 +7,15 @@ public class Loans {
     private int book_id;
     private Date loan_date;
     private Date return_date;
+    private boolean available;
 
-    public Loans(int id, String user_name, int book_id, Date loan_date, Date return_date) {
+    public Loans(int id, String user_name, int book_id, Date loan_date, Date return_date, boolean available) {
         this.id = id;
         this.user_name = user_name;
         this.book_id = book_id;
         this.loan_date = loan_date;
         this.return_date = return_date;
+        this.available = available;
     }
 
     public Loans() {
@@ -58,6 +60,14 @@ public class Loans {
 
     public void setReturn_date(Date return_date) {
         this.return_date = return_date;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 
     @Override

@@ -12,16 +12,14 @@ public class ConsolView {
         boolean userIsAdmin = false;
         boolean loginToAdmin = true;
         Scanner scanner = new Scanner(System.in);
-        Integer adminsPassword = 1111;
-
+        String adminsPassword = "1111";
         while (loginToAdmin) {
-
             System.out.print("Do you want to login as admin? (1) Yes / (2) No : ");
-            String loginAdmin = scanner.next();
+            String loginAdmin = scanner.nextLine();
             if (Objects.equals(loginAdmin, "1")) {
-                System.out.print("Password: ");
-                Integer userAdminInput = scanner.nextInt();
-                if (userAdminInput.equals(adminsPassword)) {
+                System.out.print("Enter password: ");
+                String userAdminInput = scanner.nextLine();
+                if (Objects.equals(userAdminInput, adminsPassword)) {
                     userIsAdmin = true;
                     loginToAdmin = false; //ends loginToAdmin loop if user types right password
                 } else {
@@ -32,7 +30,6 @@ public class ConsolView {
                 loginToAdmin = false;
             }
         }
-
 
         boolean showMenuLoop = true;
         while (showMenuLoop) {
@@ -50,7 +47,7 @@ public class ConsolView {
                 System.out.println("1: Add book");
                 System.out.println("2: Remove book");
                 System.out.println("3: Display all books");
-                System.out.println("4: Search a books by author");
+                System.out.println("4: Search a books by author name");
                 System.out.println("5: Quit");
             }
             System.out.println();
@@ -60,7 +57,7 @@ public class ConsolView {
                     userMenuChoice = Integer.parseInt(scanner.nextLine());
                     break;
                 } catch (NumberFormatException e) {
-                    throw new RuntimeException(e);
+
                 }
             }
 
@@ -82,7 +79,13 @@ public class ConsolView {
                 }
 
                 case 3: {
-                    viewBook();
+                    if (userIsAdmin) {
+                        boolean admin = true;
+                        viewBook(admin);
+                    } else {
+                        boolean admin = false;
+                        viewBook(admin);
+                    }
                     break;
                 }
 
@@ -111,14 +114,16 @@ public class ConsolView {
         String avail;
         System.out.print("Enter the book´s author you want to search: ");
         String author = scanner.nextLine();
-        List<Books> books = BookDAO.searchBookWithAuthor(author);
+        List<UserLoanBook> resultList = BookDAO.searchBookWithAuthor(author);
 
-        if (!books.isEmpty()) {
-            for (Books searchBook : books) {
+        if (!resultList.isEmpty()) {
+            for (UserLoanBook searchBook : resultList) {
+                String Dat1 = String.valueOf(searchBook.getLoan_date());
+                String Dat2 = String.valueOf(searchBook.getReturn_date());
                 if (searchBook.isAvailable()) {
                     avail = "Yes";
                 } else {
-                    avail = "No";
+                    avail = "No" + " . Loan Date:" + Dat1 + " .  Return Date:" + Dat2 + " .  User Name:" + searchBook.getUser_name();
                 }
                 System.out.println("Book ID:" + searchBook.getId() + " .  Title:" + searchBook.getTitle() + " .  Author:" + searchBook.getAuthor() + " .  Available:" + avail);
             }
@@ -138,32 +143,57 @@ public class ConsolView {
 
     // To delete a book from the library
     private static void deleteBook() {
-        System.out.print("Enter book ID to delete: ");
-        int id = scanner.nextInt();
-        bookDAO.deleteBook(id);
+        Scanner scanner = new Scanner(System.in);
+        int id = 0;
+        boolean validInput = false;
+
+        while (!validInput) {
+            System.out.print("Enter book ID to delete: ");
+
+            if (scanner.hasNextInt()) {
+                id = scanner.nextInt();
+                validInput = true;
+
+            } else {
+                System.out.println("Invalid input. Please enter a ID.");
+                scanner.next();
+            }
+        }
+
+        Books book = LoanDAO.loanBookByID(id);
+        if (book != null) {
+            bookDAO.deleteBook(id);
+        } else {
+            System.out.println("( There is no such as id )");
+        }
     }
 
     // To view all books in the library
-    private static void viewBook() {
+    private static void viewBook(boolean admin) {
         String avail;
-        List<Books> books = bookDAO.viewBook();
-
-        for (Books book : books) {
+        List<UserLoanBook> books = bookDAO.viewBook();
+        for (UserLoanBook book : books) {
+            String Dat1 = String.valueOf(book.getLoan_date());
+            String Dat2 = String.valueOf(book.getReturn_date());
             if (book.isAvailable()) {
                 avail = "Yes";
             } else {
-                avail = "No";
+                if (admin) {
+                    avail = "No" + " . Loan Datum:" + Dat1 + " .  Return Datum:" + Dat2 + " .  User Name:" + book.getUser_name();
+                } else {
+                    avail = "No" + " .  Return Datum:" + Dat2;
+                }
             }
-            //   System.out.println( book.getId() + " | " + book.getTitle() + " | " + book.getAuthor()+ " | " + avail);
+
             System.out.println("Book ID:" + book.getId() + " .  Title:" + book.getTitle() + " .  Author:" + book.getAuthor() + " .  Available:" + avail);
         }
-
     }
 
     // Menu to loan a book by ID,Title,Author
     private static void loanBook() {
         boolean showMenu = true;
-
+        int id = 0;
+        boolean validInput = false;
         System.out.print("Enter your name: ");
         String userName = scanner.next();
 
@@ -171,28 +201,38 @@ public class ConsolView {
             String option = "loan";
             IdTitleMenu(userName, option);
 
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-            switch (choice) {
-                case 1:
-                    loanBookById(userName);
-                    showMenu = false;
-                    break;
-                case 2:
-                    loanBookByTitle(userName);
-                    showMenu = false;
-                    break;
-                case 3:
-                    showMenu = false;
-                    break;
+            while (!validInput) {
+                if (scanner.hasNextInt()) {
+                    id = scanner.nextInt();
+                    validInput = true;
+                    switch (id) {
+                        case 1:
+                            loanBookById(userName);
+                            showMenu = false;
+                            break;
+                        case 2:
+                            loanBookByTitle(userName);
+                            showMenu = false;
+                            break;
+                        case 3:
+                            showMenu = false;
+                            break;
+                    }
+                } else {
+                    System.out.println("Invalid input. Please enter a ID.");
+                    scanner.next();
+                }
             }
+
+
         }
     }
 
     // Menu to return a book by ID,Title
     private static void returnBook() {
         boolean showMenu = true;
-
+        int id = 0;
+        boolean validInput = false;
         System.out.print("Enter your name: ");
         String userName = scanner.next();
 
@@ -202,32 +242,50 @@ public class ConsolView {
                 String option = "return";
                 IdTitleMenu(userName, option);
 
-                int choice = scanner.nextInt();
-                scanner.nextLine();
-                switch (choice) {
-                    case 1:
-                        returnBookById(userName);
-                        showMenu = false;
-                        break;
-                    case 2:
-                        returnBookByTitle(userName);
-                        showMenu = false;
-                        break;
-                    case 3:
-                        showMenu = false;
-                        break;
+                while (!validInput) {
+                    if (scanner.hasNextInt()) {
+                        id = scanner.nextInt();
+                        validInput = true;
+                        switch (id) {
+                            case 1:
+                                returnBookById(userName);
+                                showMenu = false;
+                                break;
+                            case 2:
+                                returnBookByTitle(userName);
+                                showMenu = false;
+                                break;
+                            case 3:
+                                showMenu = false;
+                                break;
+                        }
 
+                    } else {
+                        System.out.println("Invalid input. Please enter a ID.");
+                        scanner.next();
+                    }
                 }
+
+
             }
         }
-
-
     }
 
     // To loan a book by ID
     private static void loanBookById(String userName) {
         System.out.print("Enter the book´s ID you want to borrow: ");
-        int id = scanner.nextInt();
+        int id = 0;
+        boolean validInput = false;
+        while (!validInput) {
+            if (scanner.hasNextInt()) {
+                id = scanner.nextInt();
+                validInput = true;
+
+            } else {
+                System.out.println("Invalid input. Please enter a ID.");
+                scanner.next();
+            }
+        }
         Books book = LoanDAO.loanBookByID(id);
         if (book != null) {
 
@@ -269,7 +327,19 @@ public class ConsolView {
         List<UserLoanBook> resultList = LoanDAO.DisplayMyLoanBooks(userName);
 
         System.out.print("Enter the book´s ID you want to return: ");
-        int id = scanner.nextInt();
+        int id = 0;
+        boolean validInput = false;
+        while (!validInput) {
+            if (scanner.hasNextInt()) {
+                id = scanner.nextInt();
+                validInput = true;
+
+            } else {
+                System.out.println("Invalid input. Please enter a ID.");
+                scanner.next();
+            }
+        }
+
         boolean found = false;
 
         for (UserLoanBook obj : resultList) {
